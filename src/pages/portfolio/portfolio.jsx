@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Share2, Mail, Copy, Wallet, ExternalLink, CheckCircle2, Calendar, Link, Download, Plus, FolderGit2, Award, Flag, Trophy, FileText, FileCheck, X, Loader2 } from 'lucide-react';
+import { Share2, Mail, Copy, Wallet, ExternalLink, CheckCircle2, Calendar, Link, Download, Plus, FolderGit2, Award, Flag, Trophy, FileText, FileCheck, X, Loader2, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getProofStats, getUserProofs } from '../../utils/proofsApi';
 import { getCurrentUser } from '../../utils/supabaseAuth';
@@ -264,27 +264,23 @@ export default function Portfolio() {
 
   // Auto-generate skills from proofs extracted_data; fall back to profile.skills if no extracted skills
   const autoSkills = useMemo(() => {
-    const validProofs = proofs.filter(proof => {
+    // Filter proofs where extracted_data.normalizedSkills exists and has items
+    const proofsWithSkills = proofs.filter(proof => {
       const extracted = proof?.extracted_data;
-      const category = extracted?.program_category;
-      const conf = extracted?.confidence?.program_category;
-      return (
-        proof?.extracted_data &&
-        typeof category === 'string' &&
-        category.length > 0 &&
-        typeof conf === 'number' &&
-        conf >= 0.7
-      );
+      return extracted?.normalizedSkills && Array.isArray(extracted.normalizedSkills) && extracted.normalizedSkills.length > 0;
     });
 
-    const categorySet = new Set();
-    validProofs.forEach(proof => {
-      const category = proof.extracted_data.program_category;
-      if (category) categorySet.add(category);
+    // Flatten and deduplicate
+    const skillsSet = new Set();
+    proofsWithSkills.forEach(proof => {
+      const normalizedSkills = proof.extracted_data.normalizedSkills;
+      normalizedSkills.forEach(skill => skillsSet.add(skill));
     });
 
-    const fromProofs = Array.from(categorySet);
+    const fromProofs = Array.from(skillsSet);
     if (fromProofs.length > 0) return fromProofs;
+    
+    // Fallback to profile.skills
     return profile?.skills || [];
   }, [proofs, profile]);
 
@@ -692,6 +688,12 @@ export default function Portfolio() {
                             <span className="font-medium text-[9px]">Verifiable</span>
                           </div>
                         )}
+                        {proof.status === 'pending' && (
+                          <div className="flex items-center gap-0.5 text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded whitespace-nowrap">
+                            <Clock size={12} />
+                            <span className="font-medium text-[9px]">Pending</span>
+                          </div>
+                        )}
                       </div>
                       <button className="text-gray-400 hover:text-[#C19A4A] transition-colors" aria-label="Share proof">
                         <Share2 size={16} />
@@ -790,6 +792,7 @@ export default function Portfolio() {
         </div>
       </main>
 
+      
       {/* Floating action bar */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.5 }} className="fixed bottom-2 left-3 right-3 z-40">
@@ -811,11 +814,11 @@ export default function Portfolio() {
                 <Plus size={14} />
                 <span className="hidden sm:inline">Add New Proof</span>
                 <span className="sm:hidden">Add</span>
-              </button>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
 
       <style>{`
         @keyframes blob {

@@ -35,9 +35,10 @@ export const uploadProof = async (
         file_ipfs_url: proofData.fileIpfsUrl || proofData.ipfsUrl || null,
         metadata_ipfs_hash: proofData.metadataIpfsHash || null,
         metadata_ipfs_url: proofData.metadataIpfsUrl || null,
-        blockchain_tx: proofData.transactionHash || null,
-        status: "verified",
-        verified_at: new Date().toISOString(),
+        blockchain_tx: proofData.blockchain_tx || proofData.transactionHash || null,
+        file_hash: proofData.fileHash || null,
+        status: proofData.status || "pending",
+        verified_at: proofData.status ? null : new Date().toISOString(),
         extracted_data: proofData.extractedData || null,
       })
       .select()

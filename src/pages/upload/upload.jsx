@@ -4,22 +4,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getCurrentUser } from '../../utils/supabaseAuth';
+import { supabase } from '../../config/supabaseClient';
 import { uploadProof } from '../../utils/proofsApi';
-import { extractDocumentData, supportsExtraction } from '../../utils/extractionApi';
-import { uploadDocumentWithMetadata } from '../../utils/pinataUpload';
 import { submitProofToBlockchain, updateProofWithBlockchainData } from '../../utils/blockchainSubmission';
 import { saveFormData, getFormData, clearFormData } from '../../utils/formPersistence';
+import { generateFileHash, checkDuplicateHash } from '../../utils/fileHashing';
+import { supportsExtraction, extractDocumentData } from '../../utils/extractionApi';
+import { uploadDocumentWithMetadata } from '../../utils/pinataUpload';
 import { useWallet } from '../../hooks/useWallet';
-import { useToast } from '../../components/Toast';
-import ToastContainer from '../../components/Toast';
 import TransactionSignerModal from '../../components/TransactionSignerModal';
+import InfoModal from '../../components/InfoModal';
 import Header from '../../components/header/header.jsx';
 import Footer from '../../components/footer/footer.jsx';
 import './upload.css';
 
 function Upload() {
   const { publicKey, connected, connectWallet } = useWallet();
-  const { toasts, addToast, removeToast } = useToast();
 
   // Form state
   const [proofType, setProofType] = useState('');
@@ -47,6 +47,31 @@ function Upload() {
 
   // Store result data for success modal
   const [submissionResult, setSubmissionResult] = useState(null);
+
+  // Info Modal state
+  const [infoModal, setInfoModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info',
+    actions: [],
+  });
+
+  // Error Modal state (for inline errors)
+  const [errorModal, setErrorModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'error',
+  });
+
+  // Help Modal state (for Required Evidence and Upload Requirements)
+  const [helpModal, setHelpModal] = useState({
+    isOpen: false,
+    title: '',
+    content: null,
+    type: 'info',
+  });
 
   const dropdownRef = useRef(null);
   const referenceFileInputRef = useRef(null);
@@ -215,6 +240,21 @@ function Upload() {
     return null;
   };
 
+  // Helper function to show info modal
+  const showInfoModal = (title, message, type = 'info', actions = []) => {
+    setInfoModal({ isOpen: true, title, message, type, actions });
+  };
+
+  // Helper function to show error modal
+  const showErrorModal = (title, message) => {
+    setErrorModal({ isOpen: true, title, message, type: 'error' });
+  };
+
+  // Helper function to show help modal
+  const showHelpModal = (title, content, type = 'info') => {
+    setHelpModal({ isOpen: true, title, content, type });
+  };
+
   const handleReferenceFiles = async (files) => {
     setSupportingError('');
     if (files.length === 0) return;
@@ -222,7 +262,7 @@ function Upload() {
     const error = validateFile(file);
     if (error) {
       setSupportingError(error);
-      addToast(error, 'error');
+      showErrorModal('Invalid File', error);
       setTimeout(() => setSupportingError(''), 5000);
       return;
     }
@@ -236,12 +276,12 @@ function Upload() {
         if (!summary.trim() && extracted.summary) setSummary(extracted.summary);
         if (!proofName.trim() && extracted.title) setProofName(extracted.title);
         if (extracted.needsReview) {
-          addToast('Document processed — some fields may need review', 'warning');
+          showInfoModal('Document Processed', 'Document processed — some fields may need review', 'warning');
         } else {
-          addToast('Document processed successfully', 'success');
+          showInfoModal('Document Processed', 'Document processed successfully', 'success');
         }
       } else {
-        addToast('Auto-fill unavailable — fill in the fields manually', 'info');
+        showInfoModal('Auto-Fill Unavailable', 'Auto-fill unavailable — fill in the fields manually', 'info');
       }
     }
   };
@@ -251,12 +291,69 @@ function Upload() {
     e.stopPropagation();
   };
 
+  /**
+   * Polls Supabase for CRE agent verification status
+   */
+  const startPolling = (proofId) => {
+    const interval = setInterval(async () => {
+      try {
+        const { data } = await supabase
+          .from('proofs')
+          .select('status, ai_confidence_score, file_ipfs_url, metadata_ipfs_url, blockchain_tx')
+          .eq('id', proofId)
+          .single();
+
+        if (data?.status === 'verified') {
+          clearInterval(interval);
+          setShowPendingModal(false);
+          setPendingProofData({ 
+            proofId, 
+            proofName, 
+            file_ipfs_url: data.file_ipfs_url,
+            metadata_ipfs_url: data.metadata_ipfs_url 
+          });
+          setShowTransactionModal(true);
+        } else if (
+          data?.status === 'pending' && 
+          data?.ai_confidence_score !== null && 
+          data?.ai_confidence_score < 85
+        ) {
+          clearInterval(interval);
+          setShowPendingModal(false);
+          setIsUploading(false);
+          showInfoModal(
+            'Manual Review Required',
+            'Document flagged for manual review — AI confidence too low', 
+            'warning'
+          );
+        }
+      } catch (err) {
+        console.error('Polling error:', err);
+      }
+    }, 3000);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      if (showPendingModal) {
+        setShowPendingModal(false);
+        setIsUploading(false);
+        showInfoModal(
+          'Verification Pending',
+          'Verification is taking longer than expected. Check your dashboard.',
+          'info'
+        );
+      }
+    }, 120000);
+  };
+
+  /**
+   * Handles form submission, file hashing, duplicate checking, and blockchain signing
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setUploadError('');
     let hasError = false;
-
-    // Validate form fields only — wallet check is deferred to transaction signing step
+    
     if (!proofName.trim() || !summary.trim() || !proofType) {
       setUploadError('Please fill in all required fields.');
       hasError = true;
@@ -266,50 +363,95 @@ function Upload() {
       hasError = true;
     }
     if (hasError) return;
-
-    // If wallet not connected, prompt connection now (before opening transaction modal).
-    // connectWallet() opens the wallet adapter modal. After connecting the user
-    // can click Upload again and we proceed immediately since connected will be true.
-    if (!connected) {
-      setUploadError('Please connect your wallet to sign the upload transaction.');
-      try {
-        await connectWallet();
-      } catch {
-        // user dismissed wallet modal — leave the error message visible
-      }
-      return;
-    }
-
+    
     setIsUploading(true);
+    setShowPendingModal(true);
+    
     try {
       const user = await getCurrentUser();
       if (!user) throw new Error('You must be logged in to upload proofs');
 
-      const documentData = {
-        proofType,
-        proofName,
-        summary,
-        referenceLink: referenceLink || null,
-        walletAddress: publicKey?.toString() || null,
-        userId: user.id,
-        uploadedAt: new Date().toISOString(),
-      };
+      // 1. Generate Hash and Check for Duplicates (Integrity layer)
+      const file = referenceFiles[0];
+      const fileHash = await generateFileHash(file);
+      const isDuplicate = await checkDuplicateHash(fileHash);
 
-      setExtractedDocumentData(documentData);
-      setPendingProofData({
+      if (isDuplicate) {
+        throw new Error('Invalid Doc: This document has already been uploaded before.');
+      }
+
+      // 2. Trigger Blockchain Signing (Intent to verify)
+      let signatureHex = null;
+      try {
+        const provider = window.solana;
+        if (provider && provider.isPhantom) {
+          const message = `I certify that this ${proofType} is authentic. Hash: ${fileHash}`;
+          const encodedMessage = new TextEncoder().encode(message);
+          const signedMessage = await provider.signMessage(encodedMessage, "utf8");
+          
+          const signatureArray = Array.from(signedMessage.signature);
+          signatureHex = signatureArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        } else {
+          console.warn("Phantom wallet not connected. Upload will be marked as pending.");
+        }
+      } catch (signError) {
+        console.warn("User rejected the signature.", signError);
+      }
+
+      // 3. Save as PENDING in Supabase first
+      const proofData = {
+        userId: user.id,
         proofType,
         proofName,
         summary,
         referenceLink: referenceLink || null,
-        userId: user.id,
-        extractedData: extractedApiData,
+        fileHash: fileHash,
+        blockchain_tx: signatureHex,
+        status: 'pending', // Always pending initially, the CRE Agent upgrades it!
+      };
+      
+      // Upload the file to storage and create the DB record
+      const uploadResult = await uploadProof(proofData, [file], []);
+      
+      // 4. 🔥 WAKE UP THE CHAINLINK CRE AGENT 🔥
+      // Extract the uploaded file URL and Proof ID to send to the Agent
+      const uploadedFileUrl = uploadResult.referenceFiles[0]?.file_url;
+      const proofId = uploadResult.proof.id;
+
+      try {
+        // This is the HTTP Trigger URL - use environment variable
+        await fetch(process.env.REACT_APP_CRE_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            proofId: proofId,
+            fileUrl: uploadedFileUrl,
+            proofType: proofType,
+            proofName: proofName,
+            signature: signatureHex
+          })
+        });
+        console.log("CRE Agent triggered successfully!");
+      } catch (creError) {
+        console.error("Failed to trigger CRE Agent:", creError);
+        // We don't block the UI here. The proof is safely pending in the DB.
+      }
+      
+      setSubmissionResult({
+        txHash: signatureHex,
+        fileUrl: uploadedFileUrl,
+        metadataUrl: null,
+        proofName: proofName,
       });
-      setShowTransactionModal(true);
+      setShowPendingModal(false);
+      setShowSubmittedModal(true);
+      // Start polling for CRE to complete verification
+      startPolling(proofId);
     } catch (error) {
-      console.error('[v0] Error preparing proof submission:', error);
-      addToast(error.message || 'Failed to prepare proof submission', 'error');
+      console.error('Upload error:', error);
+      setUploadError(error.message || 'Failed to upload proof');
+      setShowPendingModal(false);
       setIsUploading(false);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -382,7 +524,7 @@ function Upload() {
 
     } catch (error) {
       console.error('[v0] Error completing proof submission:', error);
-      addToast(error.message || 'Failed to complete proof submission.', 'error');
+      showErrorModal('Submission Failed', error.message || 'Failed to complete proof submission.');
       setShowPendingModal(false);
       setIsUploading(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -426,7 +568,34 @@ function Upload() {
   return (
     <div className="min-h-screen bg-[#0B0F1B] text-white selection:bg-[#C19A4A]/30 relative overflow-hidden flex flex-col">
 
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
+      {/* Info Modal for notifications */}
+      <InfoModal
+        isOpen={infoModal.isOpen}
+        onClose={() => setInfoModal(prev => ({ ...prev, isOpen: false }))}
+        title={infoModal.title}
+        message={infoModal.message}
+        type={infoModal.type}
+        actions={infoModal.actions}
+      />
+
+      {/* Error Modal for errors */}
+      <InfoModal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal(prev => ({ ...prev, isOpen: false }))}
+        title={errorModal.title}
+        message={errorModal.message}
+        type="error"
+      />
+
+      {/* Help Modal for Required Evidence and Upload Requirements */}
+      <InfoModal
+        isOpen={helpModal.isOpen}
+        onClose={() => setHelpModal(prev => ({ ...prev, isOpen: false }))}
+        title={helpModal.title}
+        type={helpModal.type}
+      >
+        {helpModal.content}
+      </InfoModal>
 
       {/* Background Elements */}
       <div className="fixed inset-0 opacity-30 pointer-events-none z-0">
@@ -623,7 +792,21 @@ function Upload() {
               <div className="space-y-3 pt-4 border-t border-white/5">
                 <label className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-gray-400 ml-1">
                   <span>Reference Document *</span>
-                  <span className="flex items-center gap-1.5 text-[#C19A4A]/80 cursor-help hover:text-[#C19A4A] transition-colors normal-case tracking-normal font-normal">
+                  <span 
+                    onClick={() => showHelpModal('Reference Document Help', (
+                      <div className="text-gray-300 text-sm space-y-3">
+                        <p><strong className="text-[#C19A4A]">Required Evidence:</strong> Upload a document that proves your claim (certificate, offer letter, project screenshot, etc.)</p>
+                        <p><strong className="text-[#C19A4A]">File Requirements:</strong></p>
+                        <ul className="list-disc list-inside text-xs space-y-1 text-gray-400">
+                          <li>Maximum size: 2MB</li>
+                          <li>Accepted formats: PDF, JPG, PNG, DOC, DOCX</li>
+                          <li>Document must clearly show your achievement or work</li>
+                        </ul>
+                        <p className="text-xs text-gray-400 italic">Tip: Make sure the document is not password-protected and text is readable.</p>
+                      </div>
+                    ), 'info')}
+                    className="flex items-center gap-1.5 text-[#C19A4A]/80 cursor-help hover:text-[#C19A4A] transition-colors normal-case tracking-normal font-normal"
+                  >
                     <i className="fa-regular fa-circle-question"></i> Get Help
                   </span>
                 </label>
@@ -762,7 +945,7 @@ function Upload() {
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-white relative z-10">Submitting Proof...</h3>
                 <p className="text-gray-400 text-xs leading-relaxed relative z-10">
-                  Uploading to IPFS and anchoring on-chain.<br />This may take a few moments.
+                  Saving your proof...<br />Our AI agent will verify it in the background.
                 </p>
               </div>
             </motion.div>
@@ -882,3 +1065,4 @@ function Upload() {
 }
 
 export default Upload;
+

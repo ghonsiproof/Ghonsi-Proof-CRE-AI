@@ -24,16 +24,114 @@ export const supportsExtraction = (proofType) => {
 };
 
 /**
+ * Derive normalizedSkills from extracted data based on proof type.
+ * Always returns an array, max 2 items, confidence filtered, field-agnostic.
+ */
+const deriveNormalizedSkills = (proofType, extractedData) => {
+  if (!extractedData) return [];
+  
+  const confidence = extractedData.confidence || {};
+  const skills = [];
+
+  switch (proofType) {
+    case 'certificate': {
+      // If program_category exists and confidence.program_category >= 0.7
+      const programCategory = extractedData.program_category;
+      const programCategoryConfidence = confidence.program_category;
+      if (programCategory && typeof programCategory === 'string' && 
+          programCategoryConfidence >= 0.7) {
+        skills.push(programCategory);
+      }
+      break;
+    }
+
+    case 'job': {
+      // If job_category exists and confidence.job_category >= 0.7
+      const jobCategory = extractedData.job_category;
+      const jobCategoryConfidence = confidence.job_category;
+      if (jobCategory && typeof jobCategory === 'string' && 
+          jobCategoryConfidence >= 0.7) {
+        skills.push(jobCategory);
+      }
+      break;
+    }
+
+    case 'skill': {
+      // If extractedData.skills exists and is array, filter by confidence if available, slice first 2
+      const extractedSkills = extractedData.skills;
+      if (Array.isArray(extractedSkills)) {
+        const filteredSkills = extractedSkills.filter(skill => {
+          // If confidence object exists with skill names as keys
+          if (confidence && typeof confidence === 'object') {
+            // skill could be a string or object with name property
+            const skillName = typeof skill === 'string' ? skill : skill.name;
+            const skillConfidence = confidence[skillName];
+            // If confidence is available, check threshold; if not, include skill
+            if (skillConfidence !== undefined) {
+              return skillConfidence >= 0.7;
+            }
+          }
+          return true; // Include if no confidence data
+        });
+        skills.push(...filteredSkills.slice(0, 2));
+      } else if (extractedData.skill_name) {
+        // Fallback to single skill_name
+        const skillNameConfidence = confidence.skill_name;
+        if (skillNameConfidence === undefined || skillNameConfidence >= 0.7) {
+          skills.push(extractedData.skill_name);
+        }
+      }
+      break;
+    }
+
+    case 'milestone': {
+      // Only include if there is a category style field with confidence >= 0.7
+      const milestoneType = extractedData.milestone_type;
+      const milestoneTypeConfidence = confidence.milestone_type;
+      if (milestoneType && typeof milestoneType === 'string' && 
+          milestoneTypeConfidence >= 0.7) {
+        skills.push(milestoneType);
+      }
+      break;
+    }
+
+    case 'contribution': {
+      // Only include if there is a category style field with confidence >= 0.7
+      const contributionType = extractedData.contribution_type;
+      const contributionTypeConfidence = confidence.contribution_type;
+      if (contributionType && typeof contributionType === 'string' && 
+          contributionTypeConfidence >= 0.7) {
+        skills.push(contributionType);
+      }
+      break;
+    }
+
+    default:
+      break;
+  }
+
+  // Enforce: Array, Max 2, Remove nulls/undefined
+  return [...skills]
+    .filter(s => s && typeof s === 'string' && s.trim().length > 0)
+    .slice(0, 2);
+};
+
+/**
  * Normalize the extracted_data fields into a consistent shape that
  * upload.jsx can use regardless of proof type.
  *
- * Always returns: { title, summary, raw }
+ * Always returns: { title, summary, raw, normalizedSkills }
  *   title   → used to pre-fill the "Proof Name" input
  *   summary → used to pre-fill the "Summary" textarea
  *   raw     → the full extracted_data object, stored as extractedData in the DB
+ *   normalizedSkills → standardized skills array (max 2 items, confidence filtered)
  */
 const normalizeExtractedData = (proofType, extractedData) => {
-  if (!extractedData) return { title: null, summary: null, raw: null };
+  if (!extractedData) {
+    return { title: null, summary: null, raw: null, normalizedSkills: [] };
+  }
+
+  const normalizedSkills = deriveNormalizedSkills(proofType, extractedData);
 
   switch (proofType) {
     case 'certificate': {
@@ -44,7 +142,7 @@ const normalizeExtractedData = (proofType, extractedData) => {
         extractedData.program_category && `Category: ${extractedData.program_category}`,
         extractedData.completion_date && `Completed: ${extractedData.completion_date}`,
       ].filter(Boolean);
-      return { title, summary: parts.join(', ') || null, raw: extractedData };
+      return { title, summary: parts.join(', ') || null, raw: extractedData, normalizedSkills };
     }
 
     case 'job': {
@@ -57,7 +155,7 @@ const normalizeExtractedData = (proofType, extractedData) => {
         extractedData.location && `Location: ${extractedData.location}`,
         extractedData.job_category && `Category: ${extractedData.job_category}`,
       ].filter(Boolean);
-      return { title, summary: parts.join(', ') || null, raw: extractedData };
+      return { title, summary: parts.join(', ') || null, raw: extractedData, normalizedSkills };
     }
 
     case 'skill': {
@@ -71,7 +169,7 @@ const normalizeExtractedData = (proofType, extractedData) => {
         extractedData.proficiency_level && `Level: ${extractedData.proficiency_level}`,
         extractedData.evidence_type && `Evidence: ${extractedData.evidence_type}`,
       ].filter(Boolean);
-      return { title, summary: parts.join(', ') || null, raw: extractedData };
+      return { title, summary: parts.join(', ') || null, raw: extractedData, normalizedSkills };
     }
 
     case 'milestone': {
@@ -79,7 +177,7 @@ const normalizeExtractedData = (proofType, extractedData) => {
         ? `${extractedData.milestone_type}${extractedData.issuer ? ` from ${extractedData.issuer}` : ''}`
         : null;
       const summary = extractedData.milestone_summary || null;
-      return { title, summary, raw: extractedData };
+      return { title, summary, raw: extractedData, normalizedSkills };
     }
 
     case 'contribution': {
@@ -89,11 +187,11 @@ const normalizeExtractedData = (proofType, extractedData) => {
         extractedData.date && `Date: ${extractedData.date}`,
         extractedData.url && `URL: ${extractedData.url}`,
       ].filter(Boolean);
-      return { title, summary: parts.join(', ') || null, raw: extractedData };
+      return { title, summary: parts.join(', ') || null, raw: extractedData, normalizedSkills };
     }
 
     default:
-      return { title: null, summary: null, raw: extractedData };
+      return { title: null, summary: null, raw: extractedData, normalizedSkills };
   }
 };
 
