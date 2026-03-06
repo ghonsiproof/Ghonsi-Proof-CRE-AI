@@ -1,9 +1,0 @@
-REACT_APP_SUPABASE_URL=https://jzcowmijfzsgehyscfaw.supabase.co
-REACT_APP_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6Y293bWlqZnpzZ2VoeXNjZmF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4MDgwODIsImV4cCI6MjA4MTM4NDA4Mn0.EKAl7DGvMWE7w_50VOqdNxTv7NkBW5EtZezQb6BBAfg
-
-# Optional: Solana Configuration (for future blockchain integration)
-REACT_APP_SOLANA_NETWORK=devnet
-REACT_APP_SOLANA_RPC_URL=https://api.devnet.solana.com
-
-# Optional: Analytics
-REACT_APP_GOOGLE_ANALYTICS_ID=your_ga_id
