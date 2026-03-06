@@ -1,0 +1,20 @@
+{
+  "name": "cre-agent",
+  "version": "1.0.0",
+  "description": "Chainlink CRE Agent for Ghonsi Proof",
+  "main": "simulate.js",
+  "scripts": {
+    "simulate": "node simulate.js",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@chainlink/cre-sdk": "^1.0.0",
+    "dotenv": "^16.0.3",
+    "viem": "^2.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

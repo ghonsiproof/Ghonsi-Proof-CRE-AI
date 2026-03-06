@@ -1,0 +1,9 @@
+{
+  "_comment": "This is an example/template file showing the expected request format for the CRE agent workflow trigger. In production, the simulate.js script fetches real pending proofs from Supabase directly.",
+  "proofId": "REPLACE_WITH_ACTUAL_PROOF_ID_FROM_SUPABASE",
+  "fileUrl": "REPLACE_WITH_ACTUAL_FILE_URL_FROM_SUPABASE_FILES_TABLE", 
+  "proofType": "certificates",
+  "proofName": "Your Proof Name",
+  "summary": "Your proof summary",
+  "signature": "REPLACE_WITH_ACTUAL_WALLET_SIGNATURE"
+}

@@ -1,0 +1,8 @@
+{
+  "proofId": "test-uuid-from-your-db",
+  "fileUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testTitle.pdf", 
+  "proofType": "certificates",
+  "proofName": "Hackathon Test Certificate",
+  "summary": "This is a test of the autonomous agent.",
+  "signature": "mock-solana-signature-12345"
+}
