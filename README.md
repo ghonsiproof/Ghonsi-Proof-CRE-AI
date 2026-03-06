@@ -1,142 +1,229 @@
 # Ghonsi Proof
 
-**The On-Chain Trust Engine for the Web3 Workforce..**
+**The On-Chain Trust Engine for the Web3 Workforce.**
 
-Ghonsi Proof is a decentralized platform built on Solana that transforms scattered professional contributions into a single verifiable on-chain identity. We help Web3 professionals prove their skills, authenticate their work, and showcase verified credentials.
+Ghonsi Proof is a decentralized platform built on Solana that transforms scattered professional contributions into a single verifiable on-chain identity. We help Web3 professionals prove their skills, authenticate their work, and showcase verified credentials through blockchain-anchored NFT certificates.
+
+[![Live Demo](https://img.shields.io/badge/demo-live-success)](https://ghonsi-proof.vercel.app)
+[![Solana](https://img.shields.io/badge/Solana-Devnet-blueviolet)](https://solana.com)
+[![License](https://img.shields.io/badge/license-Proprietary-red)]()
 
 ---
 
 ## 📋 Table of Contents
 
+- [Overview](#overview)
 - [Features](#features)
+- [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
+- [Configuration](#configuration)
 - [Running the Application](#running-the-application)
-- [Available Scripts](#available-scripts)
-- [Environment Setup](#environment-setup)
-- [Pages Overview](#pages-overview)
-- [Components](#components)
-- [Styling Architecture](#styling-architecture)
-- [Authentication Flow](#authentication-flow)
-- [API Integration Guide](#api-integration-guide)
+- [Smart Contract](#smart-contract)
+- [Backend API](#backend-api)
+- [Extraction API](#extraction-api)
+- [Frontend Application](#frontend-application)
 - [Deployment](#deployment)
+- [API Documentation](#api-documentation)
 - [Contributing](#contributing)
+- [Team](#team)
 - [License](#license)
+
+---
+
+## 🎯 Overview
+
+Ghonsi Proof solves the trust problem in Web3 by providing:
+
+- **Verifiable Credentials**: Upload certificates, work history, skills, and achievements
+- **Blockchain Anchoring**: All proofs are minted as soulbound NFTs on Solana
+- **AI-Powered Extraction**: Automatic data extraction from documents using Claude AI
+- **IPFS Storage**: Decentralized file storage via Pinata
+- **Public Portfolios**: Shareable on-chain professional profiles
+- **Peer Verification**: Request verification from colleagues and organizations
 
 ---
 
 ## ✨ Features
 
-- **Wallet Authentication**: Connect with Phantom, Solflare, Backpack, and Glow wallets
-- **Email Authentication**: Alternative login method for users without wallets
-- **Proof Upload System**: Upload and verify certificates, work history, skills, milestones, and community contributions
-- **On-Chain Verification**: All proofs are recorded on the Solana blockchain
-- **Portfolio Management**: Create and manage your professional portfolio
-- **Public Profiles**: Share your verified credentials with employers and communities
-- **Proof Request System**: Request verification from peers and organizations
-- **Responsive Design**: Fully responsive UI built with Tailwind CSS
+### Core Features
+- **Multi-Wallet Support**: Phantom, Solflare, Backpack, Glow wallet integration
+- **Email Authentication**: Magic link authentication via Supabase
+- **Proof Types**: Certificates, Job History, Skills, Milestones, Community Contributions
+- **Document Upload**: Support for PDF, JPG, PNG, DOC, DOCX (up to 2MB)
+- **AI Extraction**: Automatic field extraction from uploaded documents
+- **Blockchain Minting**: Soulbound NFT certificates on Solana
+- **IPFS Storage**: Dual upload (file + metadata) to IPFS via Pinata
+- **Admin Dashboard**: Proof verification and management system
+- **Public Profiles**: Shareable portfolio pages with verified credentials
+- **Verification Requests**: Request proof verification from peers
+- **Real-time Notifications**: Toast notifications for user actions
+- **Responsive Design**: Mobile-first design with Tailwind CSS
+
+### Security Features
+- **Row Level Security (RLS)**: Database-level access control
+- **Soulbound NFTs**: Non-transferable proof certificates
+- **Wallet Signatures**: Cryptographic proof of ownership
+- **Admin Multi-Sig**: Support for up to 10 program admins
+- **Encrypted Storage**: Secure file storage on Supabase
+
+---
+
+## 🏗 Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Frontend (React)                         │
+│  - User Interface                                            │
+│  - Wallet Integration                                        │
+│  - Form Management                                           │
+└────────────┬────────────────────────────────────────────────┘
+             │
+             ├──────────────┬──────────────┬──────────────┐
+             │              │              │              │
+             ▼              ▼              ▼              ▼
+┌────────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│   Supabase     │ │   Backend    │ │  Extraction  │ │    Solana    │
+│   Database     │ │     API      │ │     API      │ │   Blockchain │
+│                │ │              │ │              │ │              │
+│ - PostgreSQL   │ │ - Messages   │ │ - AI OCR     │ │ - Smart      │
+│ - Auth         │ │ - Blockchain │ │ - Document   │ │   Contract   │
+│ - Storage      │ │   Submit     │ │   Processing │ │ - NFT Mint   │
+│ - RLS          │ │              │ │              │ │ - Verify     │
+└────────────────┘ └──────────────┘ └──────────────┘ └──────────────┘
+                                                              │
+                                                              ▼
+                                                     ┌──────────────┐
+                                                     │    IPFS      │
+                                                     │   (Pinata)   │
+                                                     │              │
+                                                     │ - Files      │
+                                                     │ - Metadata   │
+                                                     └──────────────┘
+```
 
 ---
 
 ## 🛠 Tech Stack
 
 ### Frontend
-- **React** (v19.2.0) - UI library
-- **React Router DOM** (v7.9.6) - Client-side routing
-- **Tailwind CSS** (v3.4.18) - Utility-first CSS framework
-- **Lucide React** (v0.555.0) - Icon library
-- **FontAwesome** (v7.1.0) - Additional icons
+- **React** 18.2.0 - UI library
+- **React Router DOM** 6.28.0 - Client-side routing
+- **Tailwind CSS** 3.4.18 - Utility-first CSS
+- **Framer Motion** 12.31.0 - Animations
+- **Lucide React** 0.555.0 - Icons
+- **FontAwesome** 7.1.0 - Additional icons
 
-### Backend & Database
-- **Supabase** - PostgreSQL database, authentication, and file storage
-- **Supabase Auth** - Email and wallet authentication
-- **Supabase Storage** - Secure file uploads
-- **Row Level Security (RLS)** - Database-level access control
+### Blockchain
+- **Solana Web3.js** 1.98.4 - Solana JavaScript API
+- **Wallet Adapter** 0.15.39 - Multi-wallet support
+- **Anchor Framework** 0.32.1 - Solana smart contract framework
+- **SPL Token** 0.4.14 - Token program integration
 
-### Build Tools
-- **React Scripts** (v5.0.1) - Create React App build configuration
-- **PostCSS** (v8.5.6) - CSS processing
-- **Autoprefixer** (v10.4.22) - CSS vendor prefixing
+### Backend
+- **Node.js** 18+ - Runtime environment
+- **Express** 4.18.2 - Web framework
+- **Supabase JS** 2.89.0 - Database client
+- **CORS** 2.8.5 - Cross-origin resource sharing
 
-### Testing
-- **Jest** - Testing framework
-- **React Testing Library** (v16.3.0) - Component testing
+### Extraction API
+- **Django** 6.0.2 - Python web framework
+- **Django REST Framework** 3.16.1 - API framework
+- **Anthropic Claude** - AI document extraction
+- **Tesseract OCR** 0.3.13 - Optical character recognition
+- **PyPDF2** 3.0.1 - PDF processing
+- **Pillow** 12.1.1 - Image processing
+
+### Database & Storage
+- **Supabase** - PostgreSQL database + Auth + Storage
+- **IPFS (Pinata)** - Decentralized file storage
 
 ### Deployment
-- **Vercel** - Frontend hosting and CI/CD
-- **Supabase Cloud** - Backend as a Service (BaaS)
-
-### Blockchain (Integration Ready)
-- **Solana** - Blockchain platform
-- **Wallet Adapters** - For wallet connections (to be integrated)
+- **Vercel** - Frontend hosting
+- **Render** - Backend API hosting
+- **Render** - Extraction API hosting
+- **Solana Devnet** - Smart contract deployment
 
 ---
 
-## 📁 Project Structure.
+## 📁 Project Structure
 
 ```
 ghonsi-proof/
-├── public/                      # Static files
-├── src/
-│   ├── assets/                  # Images, logos, icons
-│   │   ├── ghonsi-proof-logos/  # Brand logos (PNG, SVG)
-│   │   ├── team/                # Team member photos
-│   │   └── wallet-icons/        # Wallet provider icons
-│   ├── components/              # Reusable components
+├── src/                          # Frontend React application
+│   ├── components/               # Reusable UI components
 │   │   ├── header/              # Navigation header
-│   │   └── footer/              # Footer component
+│   │   ├── footer/              # Footer component
+│   │   ├── Toast.jsx            # Toast notifications
+│   │   └── TransactionSignerModal.jsx  # Wallet transaction modal
+│   ├── pages/                   # Page components
+│   │   ├── home/                # Landing page
+│   │   ├── login/               # Authentication
+│   │   ├── dashboard/           # User dashboard
+│   │   ├── upload/              # Proof upload
+│   │   ├── portfolio/           # User portfolio
+│   │   ├── publicProfile/       # Public profile view
+│   │   ├── request/             # Verification requests
+│   │   ├── createProfile/       # Profile creation
+│   │   ├── about/               # About page
+│   │   ├── faq/                 # FAQ page
+│   │   ├── contact/             # Contact page
+│   │   ├── terms/               # Terms of service
+│   │   └── policy/              # Privacy policy
+│   ├── utils/                   # Utility functions
+│   │   ├── supabaseAuth.js      # Authentication utilities
+│   │   ├── profileApi.js        # Profile management
+│   │   ├── proofsApi.js         # Proof management
+│   │   ├── verificationApi.js   # Verification requests
+│   │   ├── extractionApi.js     # Document extraction
+│   │   ├── pinataUpload.js      # IPFS upload
+│   │   ├── blockchainSubmission.js  # Blockchain integration
+│   │   └── formPersistence.js   # Form state management
+│   ├── hooks/                   # Custom React hooks
+│   │   ├── useAuth.js           # Authentication hook
+│   │   └── useWallet.js         # Wallet connection hook
 │   ├── config/                  # Configuration files
 │   │   └── supabaseClient.js    # Supabase client setup
-│   ├── hooks/                   # Custom React hooks
-│   │   └── useAuth.js           # Authentication hook
-│   ├── pages/                   # Page components
-│   │   ├── about/               # About page
-│   │   ├── contact/             # Contact page
-│   │   ├── createProfile/       # Profile creation
-│   │   ├── dashboard/           # User dashboard
-│   │   ├── faq/                 # FAQ page
-│   │   ├── home/                # Landing page
-│   │   ├── login/               # Login page
-│   │   ├── policy/              # Privacy policy
-│   │   ├── portfolio/           # Portfolio view
-│   │   ├── publicProfile/       # Public profile view
-│   │   ├── request/             # Proof request page
-│   │   ├── terms/               # Terms of service
-│   │   └── upload/              # Proof upload page
-│   ├── utils/                   # Utility functions
-│   │   ├── auth.js              # Legacy auth utilities
-│   │   ├── supabaseAuth.js      # Supabase authentication
-│   │   ├── profileApi.js        # Profile management API
-│   │   ├── proofsApi.js         # Proof management API
-│   │   └── verificationApi.js   # Verification request API
+│   ├── assets/                  # Static assets
+│   │   ├── ghonsi-proof-logos/  # Brand logos
+│   │   ├── team/                # Team photos
+│   │   └── wallet-icons/        # Wallet icons
 │   ├── App.js                   # Main app component
-│   ├── App.css                  # Global styles
-│   ├── index.js                 # App entry point
-│   │   └── useAuth.js           # Authentication hook
-│   ├── pages/                   # Page components
-│   │   ├── about/               # About page
-│   │   ├── contact/             # Contact page
-│   │   ├── createProfile/       # Profile creation
-│   │   ├── dashboard/           # User dashboard
-│   │   ├── faq/                 # FAQ page
-│   │   ├── home/                # Landing page
-│   │   ├── login/               # Login page
-│   │   ├── policy/              # Privacy policy
-│   │   ├── portfolio/           # Portfolio view
-│   │   ├── publicProfile/       # Public profile view
-│   │   ├── request/             # Proof request page
-│   │   ├── terms/               # Terms of service
-│   │   └── upload/              # Proof upload page
-│   ├── utils/                   # Utility functions
-│   │   └── auth.js              # Authentication utilities
-│   ├── App.js                   # Main app component
-│   ├── App.css                  # Global styles
-│   ├── index.js                 # App entry point
-│   └── index.css                # Base styles
-├── package.json                 # Dependencies
+│   └── index.js                 # Entry point
+│
+├── backend/                     # Node.js backend API
+│   ├── server.js                # Express server
+│   ├── package.json             # Backend dependencies
+│   └── .env                     # Backend environment variables
+│
+├── extraction_api/              # Django extraction API
+│   ├── extraction/              # Main app
+│   │   ├── views.py             # API endpoints
+│   │   ├── ocr.py               # OCR processing
+│   │   ├── extractor.py         # AI extraction logic
+│   │   ├── document_processor.py # Document handling
+│   │   └── urls.py              # URL routing
+│   ├── config/                  # Django settings
+│   ├── requirements.txt         # Python dependencies
+│   └── manage.py                # Django management
+│
+├── ghonsi_proof/                # Solana smart contract
+│   ├── programs/                # Anchor programs
+│   │   └── ghonsi_proof/
+│   │       └── src/
+│   │           └── lib.rs       # Smart contract code
+│   ├── tests/                   # Contract tests
+│   ├── idl/                     # Interface definition
+│   ├── Anchor.toml              # Anchor configuration
+│   └── Cargo.toml               # Rust dependencies
+│
+├── public/                      # Static files
+├── scripts/                     # Database migration scripts
+├── package.json                 # Frontend dependencies
 ├── tailwind.config.js           # Tailwind configuration
+├── craco.config.js              # CRACO configuration
 └── README.md                    # This file
 ```
 
@@ -144,12 +231,20 @@ ghonsi-proof/
 
 ## 📦 Prerequisites
 
-Before you begin, ensure you have the following installed:
-
-- **Node.js** (v16.x or higher) - [Download](https://nodejs.org/)
-- **npm** (v8.x or higher) or **yarn** (v1.22.x or higher)
+### Required Software
+- **Node.js** 18.x or higher - [Download](https://nodejs.org/)
+- **npm** 8.x or higher (comes with Node.js)
 - **Git** - [Download](https://git-scm.com/)
-- **Code Editor** (VS Code recommended)
+- **Rust** 1.70+ (for smart contract development) - [Install](https://rustup.rs/)
+- **Solana CLI** 1.18+ (for smart contract deployment) - [Install](https://docs.solana.com/cli/install-solana-cli-tools)
+- **Anchor CLI** 0.32+ (for smart contract framework) - [Install](https://www.anchor-lang.com/docs/installation)
+- **Python** 3.11+ (for extraction API) - [Download](https://www.python.org/)
+
+### Required Accounts
+- **Supabase Account** - [Sign up](https://supabase.com)
+- **Pinata Account** - [Sign up](https://pinata.cloud)
+- **Anthropic API Key** - [Get key](https://console.anthropic.com/)
+- **Solana Wallet** - Phantom, Solflare, or any Solana wallet
 
 ---
 
@@ -159,204 +254,400 @@ Before you begin, ensure you have the following installed:
 
 ```bash
 git clone https://github.com/ghonsiproof/Ghonsi-Proof.git
-cd Ghonsi-Proof
+cd Ghonsi-Proof/ghonsi-proof
 ```
 
-### 2. Install Dependencies
+### 2. Install Frontend Dependencies
 
-Using npm:
 ```bash
 npm install
 ```
 
-Using yarn:
+### 3. Install Backend Dependencies
+
 ```bash
-yarn install
+cd backend
+npm install
+cd ..
 ```
 
-### 3. Install Additional Dependencies (if needed)
+### 4. Install Extraction API Dependencies
 
 ```bash
-npm install @fortawesome/fontawesome-svg-core @fortawesome/free-brands-svg-icons @fortawesome/free-solid-svg-icons @fortawesome/react-fontawesome lucide-react react-router-dom
+cd extraction_api
+pip install -r requirements.txt
+cd ..
+```
+
+### 5. Install Smart Contract Dependencies
+
+```bash
+cd ghonsi_proof
+npm install
+anchor build
+cd ..
+```
+
+---
+
+## ⚙️ Configuration
+
+### Frontend Environment Variables
+
+Create `.env` in the root directory:
+
+```env
+# Supabase Configuration
+REACT_APP_SUPABASE_URL=https://your-project.supabase.co
+REACT_APP_SUPABASE_ANON_KEY=your-anon-key-here
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
+
+# Backend API (Render)
+REACT_APP_API_URL=https://your-render-app.onrender.com
+
+# API URL FOR PROOF EXTRACTION
+STANDARD_API_KEY=https://your-extraction-api.onrender.com
+
+# Solana Configuration
+REACT_APP_SOLANA_NETWORK=devnet
+REACT_APP_SOLANA_RPC_URL=https://api.devnet.solana.com
+PROGRAM_ID=your_solana_program_id_here
+SOLANA_BACKEND_PRIVATE_KEY=[your_solana_backend_private_key_array_here]
+
+# Pinata Configuration (for IPFS storage)
+REACT_APP_PINATA_JWT=your_pinata_jwt_here
+REACT_APP_PINATA_API_KEY=your_pinata_api_key_here
+REACT_APP_PINATA_API_SECRET=your_pinata_api_secret_here
+
+# Treasury Wallet Configuration (for document proof payments)
+REACT_APP_TREASURY_WALLET=EKGNwqNBUBtH5Fnmcjjoj4Tci6dCXdcCrxcjTaWm5bLf
+
+# Optional: Analytics
+REACT_APP_GOOGLE_ANALYTICS_ID=your_ga_id
+```
+
+### Backend Environment Variables
+
+Create `backend/.env`:
+
+```env
+# Supabase Service Role (Admin Access)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Solana Configuration
+SOLANA_RPC_URL=https://api.devnet.solana.com
+SOLANA_BACKEND_PRIVATE_KEY=[1,2,3,...]  # Array format
+PROGRAM_ID=5N6CH3GTndpqdiTHrqPutaypu5Zxy4BDVMwnq88LckNv
+COLLECTION_MINT_ADDRESS=your-collection-mint
+
+# Server Configuration
+PORT=3001
+```
+
+### Extraction API Environment Variables
+
+Create `extraction_api/.env`:
+
+```env
+# Anthropic API
+ANTHROPIC_API_KEY=your-anthropic-api-key
+
+# Django Settings
+DEBUG=False
+SECRET_KEY=your-django-secret-key
+ALLOWED_HOSTS=localhost,127.0.0.1,your-domain.com
+
+# CORS
+CORS_ALLOWED_ORIGINS=http://localhost:3000,https://ghonsi-proof.vercel.app
 ```
 
 ---
 
 ## 🏃 Running the Application
 
-### Development Mode
+### Development Mode (All Services)
 
+#### Terminal 1: Frontend
 ```bash
 npm start
+# Runs on http://localhost:3000
 ```
 
-The app will open at [http://localhost:3000](http://localhost:3000)
+#### Terminal 2: Backend API
+```bash
+cd backend
+npm start
+# Runs on http://localhost:3001
+```
+
+#### Terminal 3: Extraction API
+```bash
+cd extraction_api
+python manage.py runserver
+# Runs on http://localhost:8000
+```
+
+#### Terminal 4: Solana Localnet (Optional)
+```bash
+cd ghonsi_proof
+solana-test-validator
+# Runs local Solana validator
+```
 
 ### Production Build
 
 ```bash
+# Build frontend
 npm run build
+
+# Build output in /build directory
 ```
 
-Builds the app for production to the `build` folder.
+---
 
-### Run Tests
+## 🔗 Smart Contract
+
+### Overview
+
+The Ghonsi Proof smart contract is built with Anchor Framework on Solana. It handles:
+- NFT minting for proof certificates
+- Admin management (up to 10 admins)
+- Proof verification and rejection
+- Soulbound token implementation (non-transferable)
+
+### Key Features
+
+- **Soulbound NFTs**: Proofs are minted as frozen (non-transferable) NFTs
+- **Multi-Admin System**: Primary admin can add/remove up to 10 secondary admins
+- **Proof States**: Pending → Verified/Rejected
+- **Mint Fee**: 0.01 SOL per proof mint
+- **Metaplex Integration**: Full NFT metadata support
+
+### Program ID
+
+```
+5N6CH3GTndpqdiTHrqPutaypu5Zxy4BDVMwnq88LckNv
+```
+
+### Instructions
+
+1. **initialize**: Initialize program authority
+2. **add_admin**: Add secondary admin (primary admin only)
+3. **remove_admin**: Remove secondary admin (primary admin only)
+4. **mint_proof**: Mint proof NFT certificate
+5. **verify_proof**: Verify pending proof (admin only)
+6. **reject_proof**: Reject pending proof with reason (admin only)
+
+### Building & Deploying
 
 ```bash
-npm test
+cd ghonsi_proof
+
+# Build program
+anchor build
+
+# Run tests
+anchor test
+
+# Deploy to devnet
+anchor deploy --provider.cluster devnet
+
+# Deploy to mainnet
+anchor deploy --provider.cluster mainnet
 ```
 
-Launches the test runner in interactive watch mode.
+### Testing
 
----
+```bash
+# Run all tests
+anchor test
 
-## 📜 Available Scripts
-
-| Script | Description |
-|--------|-------------|
-| `npm start` | Runs the app in development mode |
-| `npm run build` | Builds the app for production |
-| `npm test` | Runs the test suite |
-| `npm run eject` | Ejects from Create React App (irreversible) |
-
----
-
-## 🔧 Environment Setup
-
-### Create `.env` file in the root directory:
-
-```env
-# Supabase Configuration (REQUIRED)
-REACT_APP_SUPABASE_URL=https://your-project.supabase.co
-REACT_APP_SUPABASE_ANON_KEY=your-anon-key-here
-
-# Optional: Solana Configuration (for future blockchain integration)
-REACT_APP_SOLANA_NETWORK=devnet
-REACT_APP_SOLANA_RPC_URL=https://api.devnet.solana.com
-
-# Optional: Analytics
-REACT_APP_GOOGLE_ANALYTICS_ID=your_ga_id
+# Run specific test
+anchor test --skip-local-validator
 ```
 
-### How to Get Supabase Credentials:
+---
 
-1. Go to [Supabase Dashboard](https://supabase.com/dashboard)
-2. Select your project
-3. Navigate to **Settings** → **API**
-4. Copy:
-   - **Project URL** → `REACT_APP_SUPABASE_URL`
-   - **anon/public key** → `REACT_APP_SUPABASE_ANON_KEY`
+## 🔌 Backend API
 
-### Complete Setup Guide:
+### Overview
 
-See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed Supabase + Vercel setup instructions.
+Node.js/Express backend handling:
+- Message system between users
+- Blockchain proof submission
+- Supabase service role operations
+
+### Endpoints
+
+#### Health Check
+```
+GET /health
+```
+
+#### Messages
+```
+POST   /api/messages                    # Send message
+GET    /api/messages/:userId            # Get user messages
+PATCH  /api/messages/:messageId/read    # Mark as read
+DELETE /api/messages/:messageId         # Delete message
+PATCH  /api/messages/:messageId/respond # Respond to message
+```
+
+#### Blockchain
+```
+POST /api/submit-proof                  # Submit proof to blockchain
+```
+
+### Running Backend
+
+```bash
+cd backend
+npm install
+npm start
+```
+
+### Deployment (Render)
+
+1. Create new Web Service on Render
+2. Connect GitHub repository
+3. Set root directory: `backend`
+4. Build command: `npm install`
+5. Start command: `npm start`
+6. Add environment variables from `backend/.env`
 
 ---
 
-## 📄 Pages Overview
+## 🤖 Extraction API
 
-### Public Pages
-- **Home** (`/` or `/home`) - Landing page with hero section and features
-- **About** (`/about`) - Company information, mission, team
-- **FAQ** (`/faq`) - Frequently asked questions
-- **Contact** (`/contact`) - Contact form and information
-- **Terms** (`/terms`) - Terms of service
-- **Policy** (`/policy`) - Privacy policy
+### Overview
+
+Django REST API using Claude AI for intelligent document extraction:
+- Automatic field extraction from certificates, job letters, etc.
+- OCR for image-based documents
+- PDF text extraction
+- Confidence scoring and validation
+
+### Supported Proof Types
+
+- **job**: Job history/work experience
+- **certificate**: Certificates and training
+- **skill**: Skills and competencies
+- **milestone**: Career milestones (promotions, awards)
+- **contribution**: Community contributions (talks, articles, open source)
+
+### Endpoints
+
+```
+POST /api/extract/
+```
+
+**Request:**
+```bash
+curl -X POST http://localhost:8000/api/extract/ \
+  -F "file=@certificate.pdf" \
+  -F "proof_type=certificate"
+```
+
+**Response:**
+```json
+{
+  "proof_type": "certificate",
+  "extracted_data": {
+    "certificate_title": "React Advanced Course",
+    "issuer": "Udemy",
+    "completion_date": "2024-01-15",
+    "credential_type": "Course",
+    "confidence": {
+      "certificate_title": 0.95,
+      "issuer": 0.95
+    },
+    "needs_review": false
+  },
+  "validation_hash": "3a9244f13222...",
+  "cached": false
+}
+```
+
+### Running Extraction API
+
+```bash
+cd extraction_api
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
+
+### Deployment (Render)
+
+1. Create new Web Service on Render
+2. Connect GitHub repository
+3. Set root directory: `extraction_api`
+4. Build command: `pip install -r requirements.txt`
+5. Start command: `gunicorn config.wsgi:application`
+6. Add environment variables
+
+---
+
+## 💻 Frontend Application
+
+### Key Pages
+
+#### Home (`/`)
+Landing page with hero section, features, and call-to-action
+
+#### Login (`/login`)
+- Email magic link authentication
+- Multi-wallet connection (Phantom, Solflare, Backpack, Glow)
+
+#### Dashboard (`/dashboard`)
+User dashboard showing:
+- Proof statistics
+- Recent proofs
+- Verification requests
+- Quick actions
+
+#### Upload (`/upload`)
+Multi-step proof upload:
+1. Select proof type
+2. Fill proof details
+3. Upload document (auto-extraction)
+4. Connect wallet & sign transaction
+5. Upload to IPFS
+6. Mint NFT on Solana
+
+#### Portfolio (`/portfolio`)
+User's proof collection with:
+- Filter by type and status
+- Search functionality
+- Proof cards with details
+- View on Solscan links
+
+#### Public Profile (`/publicProfile`)
+Shareable portfolio page:
+- Public proof display
+- Verification badges
+- Social links
+- Contact form
+
+### Wallet Integration
+
+```javascript
+import { useWallet } from './hooks/useWallet';
+
+function Component() {
+  const { publicKey, connected, connectWallet, disconnect } = useWallet();
+  
+  return (
+    <button onClick={connectWallet}>
+      {connected ? publicKey.toString() : 'Connect Wallet'}
+    </button>
+  );
+}
+```
 
 ### Authentication
-- **Login** (`/login`) - Wallet and email authentication
 
-### Protected Pages (Require Authentication)
-- **Dashboard** (`/dashboard`) - User dashboard overview
-- **Create Profile** (`/createProfile`) - Initial profile setup
-- **Portfolio** (`/portfolio`) - User's proof portfolio
-- **Upload** (`/upload`) - Upload new proofs
-- **Request** (`/request`) - Request proof verification
-- **Public Profile** (`/publicProfile`) - Shareable public profile
-
----
-
-## 🧩 Components
-
-### Header Component
-- Navigation menu
-- Wallet connection button
-- Responsive mobile menu
-- Active route highlighting
-
-**Location**: `src/components/header/header.jsx`
-
-### Footer Component
-- Social media links
-- Quick navigation
-- Copyright information
-
-**Location**: `src/components/footer/footer.jsx`
-
----
-
-## 🎨 Styling Architecture
-
-### Global Styles
-- **App.css**: Global styles, scrollbar customization, resets
-- **index.css**: Base Tailwind imports
-
-### Component Styles
-Each page has its own CSS file for component-specific styles:
-- Custom animations (e.g., `faq.css` - slideDown animation)
-- Unique utility classes (e.g., `portfolio.css` - no-scrollbar, cursor utilities)
-- Component-specific overrides
-
-### Tailwind CSS
-- Utility-first approach for rapid development
-- Custom color palette:
-  - Primary: `#C19A4A` (Gold)
-  - Background: `#0B0F1B` (Dark Blue)
-  - Card: `#111625` (Dark Gray)
-
-### Color Scheme
-```css
---bg: #0B0F1B;           /* Main background */
---gold: #C19A4A;         /* Primary accent */
---text: #FFFFFF;         /* Text color */
---card: #111625;         /* Card background */
---border: #2A3040;       /* Border color */
-```
-
----
-
-## 🔐 Authentication Flow
-
-### Supabase Authentication
-
-The app now uses **Supabase Auth** for secure authentication:
-
-### Email Authentication
-1. User enters email address on `/login`
-2. Supabase sends magic link to email
-3. User clicks link → automatically signed in
-4. Session stored securely by Supabase
-5. Redirect to dashboard
-
-### Wallet Authentication (Hybrid Approach)
-1. User clicks wallet (Phantom, Solflare, Backpack, Glow)
-2. Wallet signature is verified
-3. User record created/retrieved with wallet address
-4. Custom session management for wallet users
-5. Redirect to home/dashboard
-
-### Session Management
-```javascript
-// Check if user is authenticated
-import { isAuthenticated } from './utils/supabaseAuth';
-
-const checkAuth = async () => {
-  const authenticated = await isAuthenticated();
-  // Returns true if email or wallet session exists
-};
-```
-
-### Using Authentication in Components
 ```javascript
 import { getCurrentUser, logout } from './utils/supabaseAuth';
 
@@ -367,307 +658,125 @@ const user = await getCurrentUser();
 await logout();
 ```
 
-### Protected Routes
-
-To protect routes, wrap them with authentication check:
-
-```javascript
-// Example: src/components/ProtectedRoute.jsx
-import { Navigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { isAuthenticated } from '../utils/supabaseAuth';
-
-const ProtectedRoute = ({ children }) => {
-  const [auth, setAuth] = useState(null);
-  
-  useEffect(() => {
-    isAuthenticated().then(setAuth);
-  }, []);
-  
-  if (auth === null) return <div>Loading...</div>;
-  return auth ? children : <Navigate to="/login" />;
-};
-```
-
----
-
-## 🔌 API Integration Guide
-
-### Supabase Backend Architecture
-
-Ghonsi Proof uses **Supabase** as its backend, which provides:
-- PostgreSQL database
-- Authentication (email + magic links)
-- File storage
-- Row Level Security (RLS)
-- Real-time subscriptions (optional)
-
-### API Modules
-
-All API functions are organized in `src/utils/`:
-
-#### 1. Authentication API (`supabaseAuth.js`)
-
-```javascript
-import { 
-  signUp, 
-  signInWithEmail, 
-  signInWithMagicLink,
-  signInWithWallet,
-  logout, 
-  getCurrentUser,
-  isAuthenticated 
-} from './utils/supabaseAuth';
-
-// Sign up with email
-await signUp('user@example.com', 'password123');
-
-// Sign in with magic link (passwordless)
-await signInWithMagicLink('user@example.com');
-
-// Sign in with wallet
-await signInWithWallet(walletAddress, signature, message);
-
-// Logout
-await logout();
-
-// Get current user
-const user = await getCurrentUser();
-```
-
-#### 2. Profile API (`profileApi.js`)
-
-```javascript
-import { 
-  createProfile, 
-  getProfile, 
-  updateProfile,
-  deleteProfile 
-} from './utils/profileApi';
-
-// Create profile
-await createProfile({
-  display_name: 'John Doe',
-  bio: 'Web3 Developer',
-  profession: 'Frontend Developer',
-  is_public: true
-});
-
-// Get profile
-const profile = await getProfile(userId);
-
-// Update profile
-await updateProfile(userId, { bio: 'Updated bio' });
-```
-
-#### 3. Proofs API (`proofsApi.js`)
-
-```javascript
-import { 
-  uploadProof, 
-  getUserProofs, 
-  getProof,
-  updateProof,
-  deleteProof,
-  updateProofStatus 
-} from './utils/proofsApi';
-
-// Upload proof with files
-const result = await uploadProof(
-  {
-    proofType: 'certificates',
-    proofName: 'React Certification',
-    summary: 'Advanced React course',
-    referenceLink: 'https://certificate-url.com'
-  },
-  referenceFiles,  // File[] array
-  supportingFiles  // File[] array
-);
-
-// Get all proofs for user
-const proofs = await getUserProofs(userId);
-
-// Get single proof
-const proof = await getProof(proofId);
-
-// Update proof status (admin)
-await updateProofStatus(proofId, 'verified', verifierId);
-```
-
-#### 4. Verification Requests API (`verificationApi.js`)
-
-```javascript
-import { 
-  createVerificationRequest,
-  getUserVerificationRequests,
-  updateVerificationRequestStatus 
-} from './utils/verificationApi';
-
-// Create verification request
-await createVerificationRequest({
-  proofId: 'uuid-here',
-  verifierEmail: 'verifier@example.com',
-  verifierName: 'Jane Smith',
-  relationship: 'Former Manager',
-  message: 'Please verify my work'
-});
-
-// Get user's requests
-const requests = await getUserVerificationRequests(userId);
-
-// Approve/reject request
-await updateVerificationRequestStatus(requestId, 'approved', 'Great work!');
-```
-
-### Database Schema
-
-See [SUPABASE_SCHEMA.md](./SUPABASE_SCHEMA.md) for complete database structure.
-
-**Main Tables:**
-- `users` - User accounts and wallet addresses
-- `profiles` - User profile information
-- `proofs` - Uploaded proof records
-- `files` - File metadata and storage links
-- `verification_requests` - Peer verification requests
-
-### File Upload Flow
-
-```javascript
-// 1. User selects files in upload form
-const files = event.target.files;
-
-// 2. Call uploadProof API
-const result = await uploadProof(proofData, files, []);
-
-// 3. Files are uploaded to Supabase Storage
-// 4. File URLs are stored in database
-// 5. User can access files via public URL
-```
-
-### Error Handling
-
-```javascript
-try {
-  await uploadProof(data, files, []);
-} catch (error) {
-  if (error.code === 'PGRST116') {
-    // Record not found
-  } else if (error.message.includes('JWT')) {
-    // Authentication error - redirect to login
-  } else {
-    // Other error
-    console.error('Upload failed:', error);
-  }
-}
-```
-
-### Real-Time Updates (Optional)
-
-```javascript
-import { supabase } from './config/supabaseClient';
-
-// Subscribe to proof updates
-const subscription = supabase
-  .channel('proofs-changes')
-  .on('postgres_changes', 
-    { event: '*', schema: 'public', table: 'proofs' },
-    (payload) => {
-      console.log('Proof updated:', payload);
-    }
-  )
-  .subscribe();
-
-// Unsubscribe when done
-subscription.unsubscribe();
-```
-
 ---
 
 ## 🌐 Deployment
 
-### Production Deployment
+### Frontend (Vercel)
 
-**Live URL**: [https://ghonsi-proof.vercel.app](https://ghonsi-proof.vercel.app)
+**Live URL**: https://ghonsi-proof.vercel.app
 
-The application is automatically deployed to Vercel via GitHub integration.
+1. Connect GitHub repository to Vercel
+2. Configure build settings:
+   - Framework: Create React App
+   - Build command: `npm run build`
+   - Output directory: `build`
+3. Add environment variables
+4. Deploy
 
-### Automatic Deployment Flow
+### Backend (Render)
 
-```
-1. Push code to GitHub (main branch)
-   ↓
-2. Vercel detects changes
-   ↓
-3. Build & deploy automatically
-   ↓
-4. Live at ghonsi-proof.vercel.app
-```
+1. Create Web Service
+2. Root directory: `backend`
+3. Build: `npm install`
+4. Start: `npm start`
+5. Add environment variables
 
-### Deployment Stack
+### Extraction API (Render)
 
-- **Frontend Hosting**: Vercel
-- **Backend**: Supabase (PostgreSQL + Storage + Auth)
-- **CI/CD**: GitHub → Vercel integration
-- **Database**: Supabase Cloud PostgreSQL
-- **File Storage**: Supabase Storage
+1. Create Web Service
+2. Root directory: `extraction_api`
+3. Build: `pip install -r requirements.txt`
+4. Start: `gunicorn config.wsgi:application`
+5. Add environment variables
 
-### Environment Variables (Vercel)
-
-Configure in Vercel Dashboard → Settings → Environment Variables:
-
-```env
-REACT_APP_SUPABASE_URL=https://xxxxx.supabase.co
-REACT_APP_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI...
-```
-
-### Quick Deployment Guide
-
-**Step 1: Setup Supabase**
-1. Create account at [supabase.com](https://supabase.com)
-2. Create new project
-3. Run SQL schema from `SUPABASE_SCHEMA.md`
-4. Copy API credentials
-
-**Step 2: Configure Vercel**
-1. Connect GitHub repo to Vercel
-2. Add environment variables
-3. Deploy!
-
-**Detailed Instructions**: See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
-
-### Branch Previews
-
-- `main` branch → Production (`ghonsi-proof.vercel.app`)
-- Feature branches → Preview URLs (`ghonsi-proof-git-feature-name.vercel.app`)
-
-### Manual Build
+### Smart Contract (Solana)
 
 ```bash
-# Build production bundle
-npm run build
+# Deploy to devnet
+anchor deploy --provider.cluster devnet
 
-# Output in /build directory
-# Upload to any static hosting service
+# Verify deployment
+solana program show <PROGRAM_ID> --url devnet
 ```
-
-### Performance
-
-- **Lighthouse Score**: 95+ (target)
-- **Time to First Byte**: < 200ms (Vercel Edge Network)
-- **CDN**: Automatic via Vercel
-- **SSL**: Automatic HTTPS via Vercel
 
 ---
 
-## 🔄 Git Workflow
+## 📚 API Documentation
 
-### Branch Strategy
-- `main` - Production-ready code
-- `develop` - Development branch
-- `feature/*` - Feature branches
-- `bugfix/*` - Bug fix branches
+### Supabase Database Schema
+
+#### Tables
+
+**users**
+- `id` (uuid, primary key)
+- `email` (text, unique)
+- `wallet_address` (text, unique)
+- `created_at` (timestamp)
+
+**profiles**
+- `id` (uuid, primary key)
+- `user_id` (uuid, foreign key)
+- `display_name` (text)
+- `bio` (text)
+- `profession` (text)
+- `is_public` (boolean)
+- `avatar_url` (text)
+
+**proofs**
+- `id` (uuid, primary key)
+- `user_id` (uuid, foreign key)
+- `proof_type` (text)
+- `proof_name` (text)
+- `summary` (text)
+- `reference_link` (text)
+- `status` (text: pending/verified/rejected)
+- `ipfs_hash` (text)
+- `ipfs_url` (text)
+- `file_ipfs_hash` (text)
+- `file_ipfs_url` (text)
+- `transaction_hash` (text)
+- `extracted_data` (jsonb)
+- `created_at` (timestamp)
+
+**verification_requests**
+- `id` (uuid, primary key)
+- `proof_id` (uuid, foreign key)
+- `requester_id` (uuid, foreign key)
+- `verifier_email` (text)
+- `verifier_name` (text)
+- `relationship` (text)
+- `message` (text)
+- `status` (text: pending/approved/rejected)
+- `created_at` (timestamp)
+
+**messages**
+- `id` (uuid, primary key)
+- `sender_id` (uuid, foreign key)
+- `receiver_id` (uuid, foreign key)
+- `portfolio_id` (uuid)
+- `message` (text)
+- `sender_name` (text)
+- `sender_email` (text)
+- `type` (text)
+- `read` (boolean)
+- `status` (text)
+- `created_at` (timestamp)
+
+---
+
+## 🤝 Contributing
+
+### Development Workflow
+
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/your-feature`
+3. Commit changes: `git commit -m 'feat: Add feature'`
+4. Push to branch: `git push origin feature/your-feature`
+5. Open Pull Request
 
 ### Commit Convention
+
 ```
 feat: Add new feature
 fix: Fix bug
@@ -678,101 +787,13 @@ test: Add tests
 chore: Update dependencies
 ```
 
----
-
-## 🤝 Contributing
-
-### For Frontend Developers
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Commit changes: `git commit -m 'feat: Add your feature'`
-4. Push to branch: `git push origin feature/your-feature`
-5. Open a Pull Request
-
-### For Backend Developers
-1. Review the [API Integration Guide](#api-integration-guide)
-2. Implement the required endpoints
-3. Test with the frontend application
-4. Document any changes to the API
-
 ### Code Style
+
 - Use ESLint and Prettier
 - Follow React best practices
 - Write meaningful commit messages
 - Add comments for complex logic
-
----
-
-## 🐛 Known Issues & Roadmap
-
-### Current Status
-
-✅ **Completed:**
-- Frontend UI/UX design
-- React routing and components
-- Supabase integration
-- Authentication system (email + wallet hybrid)
-- Database schema and RLS policies
-- File upload to Supabase Storage
-- Proof management API
-- Profile management API
-- Verification request system
-- Vercel deployment with CI/CD
-
-⚠️ **In Progress:**
-- Wallet signature verification
-- Blockchain integration (Solana)
-- Admin verification dashboard
-- Email notifications (via Supabase)
-
-### Roadmap
-
-#### Phase 1: Core Features (Current)
-- [x] Supabase backend integration
-- [x] Authentication (email + wallet)
-- [x] Profile creation and management
-- [x] Proof upload system
-- [x] File storage (Supabase Storage)
-- [ ] Protected routes implementation
-- [ ] Admin verification dashboard
-
-#### Phase 2: Blockchain Integration
-- [ ] Solana wallet adapter integration
-- [ ] Wallet signature verification
-- [ ] On-chain proof hash storage
-- [ ] Smart contract deployment
-- [ ] NFT-based credentials (optional)
-
-#### Phase 3: Enhanced Features
-- [ ] Email notifications (Supabase triggers)
-- [ ] Real-time updates (Supabase subscriptions)
-- [ ] Search and filter functionality
-- [ ] Analytics dashboard
-- [ ] Public profile sharing
-- [ ] Proof verification badges
-
-#### Phase 4: Scaling & Optimization
-- [ ] Image optimization
-- [ ] Lazy loading
-- [ ] Progressive Web App (PWA)
-- [ ] Mobile app (React Native)
-- [ ] API rate limiting
-- [ ] Caching strategy
-
----
-
-## 📞 Support
-
-For questions or issues:
-- **Email**: support@ghonsiproof.com
-- **Twitter**: [@Ghonsiproof](https://x.com/Ghonsiproof)
-- **Discord**: [Join our community](https://discord.com/)
-
----
-
-## 📄 License
-
-This project is proprietary and confidential. All rights reserved by Ghonsi Proof.
+- Update documentation
 
 ---
 
@@ -787,9 +808,27 @@ This project is proprietary and confidential. All rights reserved by Ghonsi Proo
 
 ---
 
-## 🙏 Acknowledgments.
+## 📞 Support
+
+- **Email**: support@ghonsiproof.com
+- **Twitter**: [@Ghonsiproof](https://x.com/Ghonsiproof)
+- **Telegram**: [Join community](https://t.me/ghonsiproofhub)
+- **Website**: [ghonsiproof.com](https://ghonsi-proof.vercel.app)
+
+---
+
+## 📄 License
+
+This project is proprietary and confidential. All rights reserved by Ghonsi Proof.
+
+---
+
+## 🙏 Acknowledgments
 
 - Solana Foundation
+- Anchor Framework Team
+- Supabase Team
+- Anthropic (Claude AI)
 - Web3 Community
 - All contributors and supporters
 
