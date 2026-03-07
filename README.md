@@ -1,7 +1,3 @@
-Here is the updated README file. I've integrated the Chainlink CRE Agent into your workflow, updated the architecture diagram to reflect the new pipeline, and detailed the silent background verification process in the Upload section.
-
----
-
 # Ghonsi Proof
 
 **The On-Chain Trust Engine for the Web3 Workforce.**
