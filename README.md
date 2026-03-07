@@ -18,6 +18,12 @@ Because of this:
 
 Ghonsi Proof provides decentralized infrastructure where professional credentials become **verifiable digital proofs**.
 
+Web3 professionals generate valuable work across many platforms, yet there is no standardized way to document and maintain verifiable records of their contributions. Evidence of their work is often scattered across platforms such as LinkedIn, Telegram, and X, making work histories fragmented and difficult to track over time.
+
+As a result, professionals struggle to clearly demonstrate their experience, while recruiters and companies spend significant time and resources verifying claims or rely on talent sourcing agencies that charge 20–30% of a candidate’s annual salary.
+
+The absence of reliable proof infrastructure makes hiring slower, more expensive, and less efficient across the Web3 ecosystem.
+
 Users can:
 
 * Upload evidence of their work
@@ -33,7 +39,7 @@ This creates a **portable and verifiable Web3 professional identity**.
 
 **Application**
 
-[https://ghonsi-proof.vercel.app](https://ghonsi-proof.vercel.app)
+Github live link (https://ghonsiproof.github.io/Ghonsi-Proof-CRE-AI/)
 
 **Example Public Portfolio**
 
