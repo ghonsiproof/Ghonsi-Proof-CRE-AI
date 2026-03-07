@@ -40,7 +40,7 @@ const Toast = ({ message, type = 'info', duration = 4000, onClose }) => {
 
 const ToastContainer = ({ toasts, removeToast }) => {
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2 pointer-events-none">
+<div className="fixed top-4 right-4 z-[110] space-y-2 pointer-events-none">
       <AnimatePresence>
         {toasts.map((toast) => (
           <div key={toast.id} className="pointer-events-auto">

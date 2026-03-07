@@ -594,7 +594,7 @@ function Upload() {
                   Reference Link <span className="text-gray-600 normal-case tracking-normal font-normal ml-1">(Optional)</span>
                 </label>
                 <input
-                  type="url"
+                  type="text"
                   value={referenceLink}
                   onChange={(e) => setReferenceLink(e.target.value)}
                   placeholder="https://github.com/project or https://certificate-url.com"
@@ -724,14 +724,14 @@ function Upload() {
         </motion.div>
       </main>
 
-      {/* Pending Modal */}
+{/* Pending Modal */}
       <AnimatePresence>
         {showPendingModal && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-[#0B0F1B]/90 backdrop-blur-sm z-[60] flex items-center justify-center px-4"
+            className="fixed inset-0 bg-[#0B0F1B]/90 backdrop-blur-sm z-[110] flex items-center justify-center px-4"
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
@@ -754,14 +754,14 @@ function Upload() {
         )}
       </AnimatePresence>
 
-      {/* Success Modal */}
+{/* Success Modal */}
       <AnimatePresence>
         {showSubmittedModal && submissionResult && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-[#0B0F1B]/90 backdrop-blur-sm z-[60] flex items-center justify-center px-4"
+            className="fixed inset-0 bg-[#0B0F1B]/90 backdrop-blur-sm z-[110] flex items-center justify-center px-4"
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
