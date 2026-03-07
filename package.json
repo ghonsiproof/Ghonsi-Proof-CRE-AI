@@ -1,5 +1,5 @@
 {
-  "homepage": ".",
+  "homepage": "https://ghonsiproof.github.io/Ghonsi-Proof-CRE-AI",
   "name": "ghonsi-proof",
   "version": "0.1.0",
   "private": true,
@@ -31,13 +31,15 @@
     "vm-browserify": "^1.1.2",
     "web-vitals": "^2.1.4"
   },
-  "scripts": {
-    "start": "craco start",
-    "dev": "craco start",
-    "build": "craco build",
-    "test": "craco test",
-    "eject": "react-scripts eject"
-  },
+"scripts": {
+"start": "craco start",
+"dev": "craco start",
+"build": "craco build",
+"test": "craco test",
+"eject": "react-scripts eject",
+"predeploy": "npm run build",
+"deploy": "gh-pages -d build"
+},
   "eslintConfig": {
     "extends": [
       "react-app",
