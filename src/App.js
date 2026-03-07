@@ -35,7 +35,7 @@ function App() {
     <ThemeProvider>
       {/* WalletProvider must wrap everything that uses useWallet() */}
       <WalletProvider>
-        <Router>
+        <Router basename="/Ghonsi-Proof-CRE-AI">
           <ScrollToTop />
           <Routes>
             <Route path="/" element={<Home />} />
