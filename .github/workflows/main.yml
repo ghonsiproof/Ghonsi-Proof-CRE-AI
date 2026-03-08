@@ -26,6 +26,13 @@ jobs:
 
       - name: Build project
         run: npm run build
+        env:
+          REACT_APP_SUPABASE_URL: ${{ secrets.REACT_APP_SUPABASE_URL }}
+          REACT_APP_SUPABASE_ANON_KEY: ${{ secrets.REACT_APP_SUPABASE_ANON_KEY }}
+          REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+          REACT_APP_SOLANA_NETWORK: ${{ secrets.REACT_APP_SOLANA_NETWORK }}
+          REACT_APP_SOLANA_RPC_URL: ${{ secrets.REACT_APP_SOLANA_RPC_URL }}
+          REACT_APP_TREASURY_WALLET: ${{ secrets.REACT_APP_TREASURY_WALLET }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
