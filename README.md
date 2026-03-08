@@ -589,7 +589,7 @@ Prosper Ayere — Founder & Product Lead
 Godwin Adakonye John — Blockchain Engineer
 Progress Ayere — Lead Frontend Engineer
 Gunduor Victor — Frontend Engineer
-Nie Osaoboh — Product Designer
+Isaiah Peter — Backend Engineer
 Success Ola-Ojo — Advisor
 
 ---
