@@ -39,7 +39,7 @@ This creates a **portable and verifiable Web3 professional identity**.
 
 **Application**
 
-Github live link (https://ghonsiproof.com)
+Production link (https://ghonsiproof.com)
 
 **Live Demo Link**
 
