@@ -41,9 +41,9 @@ This creates a **portable and verifiable Web3 professional identity**.
 
 Github live link (https://ghonsiproof.github.io/Ghonsi-Proof-CRE-AI/)
 
-**Example Public Portfolio**
+**Live Demo Link**
 
-[https://ghonsi-proof.vercel.app/publicProfile](https://ghonsi-proof.vercel.app/publicProfile)
+(https://drive.google.com/file/d/1HhyIl50pfpf_AgQQcgl5f5Sd_E5Tj5KL/view?usp=drivesdk)
 
 ---
 
